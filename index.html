@@ -12,6 +12,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- QR Code Generator -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
+    <!-- Firebase SDK (Realtime Database 지원) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
     <style>
         @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
         * { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif; }
@@ -73,8 +78,13 @@
                 <i class="fa-solid me-0.5 fa-cross"></i>
             </div>
             <div>
-                <h1 class="text-sm md:text-base font-bold text-white tracking-wide">슬기로운 AI 목회 생활</h1>
-                <p class="text-xs text-slate-400 hidden sm:block">창원온천교회 강명호 목사</p>
+                <div class="flex items-center space-x-2">
+                    <h1 class="text-sm md:text-base font-bold text-white tracking-wide">슬기로운 AI 목회 생활</h1>
+                    <span id="syncBadge" class="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-emerald-950 text-emerald-400 border border-emerald-700 flex items-center gap-1">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> 실시간 동기화 중
+                    </span>
+                </div>
+                <p class="text-xs text-slate-400 hidden sm:block">창원온천교회 강명호 목사 <span id="roleIndicator" class="text-cyan-400 font-bold ml-1"></span></p>
             </div>
         </div>
 
@@ -656,7 +666,7 @@
             <!-- Attendee List -->
             <div class="border-t border-slate-800 pt-3">
                 <div class="flex justify-between items-center mb-2">
-                    <span class="text-xs text-slate-400 font-semibold">현재 접속 수강생 목록 (<span id="attendeeCount">1</span>명)</span>
+                    <span class="text-xs text-slate-400 font-semibold">현재 접속 수강생 목록 (<span id="attendeeCount">0</span>명)</span>
                 </div>
                 <div id="attendeeList" class="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
                     <span class="px-2.5 py-1 bg-slate-800 text-cyan-300 text-[11px] rounded-full border border-slate-700">강명호 목사 (호스트)</span>
@@ -717,11 +727,24 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT LOGIC -->
+    <!-- JAVASCRIPT LOGIC & REALTIME SYNC ENGINE -->
     <script>
         let currentSlide = 1;
         const totalSlides = 15;
         let autoPlayInterval = null;
+
+        // Firebase 설정 (내장 실시간 동기화 데이터베이스)
+        const firebaseConfig = {
+            databaseURL: "https://ai-pastoral-presentation-default-rtdb.firebaseio.com"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const slideRef = database.ref('lecture/currentSlide');
+        const attendeesRef = database.ref('lecture/attendees');
+
+        // URL 역할 구분 (?role=host 가 있으면 강사 모드)
+        const urlParams = new URLSearchParams(window.location.search);
+        const isHost = urlParams.get('role') === 'host';
 
         const slideTitles = [
             "표지: 슬기로운 AI 목회 생활",
@@ -745,6 +768,44 @@
             updateSlideUI();
             generateQRCode();
             buildToc();
+
+            // 호스트 / 수강생 모드 UI 설정
+            const roleIndicator = document.getElementById('roleIndicator');
+            if (isHost) {
+                roleIndicator.innerText = "(강사 컨트롤러 모드)";
+                roleIndicator.classList.add("text-amber-400");
+            } else {
+                roleIndicator.innerText = "(수강생 라이브 동기화 모드)";
+            }
+
+            // Realtime Sync Listener (수강생은 강사의 실시간 슬라이드를 자동 추종)
+            slideRef.on('value', (snapshot) => {
+                const remoteSlide = snapshot.val();
+                if (remoteSlide && remoteSlide !== currentSlide) {
+                    showSlideLocal(remoteSlide);
+                }
+            });
+
+            // Realtime Attendees List Listener
+            attendeesRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                const listContainer = document.getElementById('attendeeList');
+                const countContainer = document.getElementById('attendeeCount');
+                
+                listContainer.innerHTML = `<span class="px-2.5 py-1 bg-slate-800 text-cyan-300 text-[11px] rounded-full border border-slate-700">강명호 목사 (호스트)</span>`;
+                
+                let count = 1;
+                if (data) {
+                    Object.values(data).forEach(att => {
+                        const badge = document.createElement('span');
+                        badge.className = 'px-2.5 py-1 bg-emerald-900/60 text-emerald-300 text-[11px] rounded-full border border-emerald-700';
+                        badge.innerText = `${att.name} (접속됨)`;
+                        listContainer.appendChild(badge);
+                        count++;
+                    });
+                }
+                countContainer.innerText = count;
+            });
 
             // Keyboard Navigation
             document.addEventListener('keydown', function(e) {
@@ -775,9 +836,17 @@
             }
         };
 
+        // 로컬 슬라이드 변경 및 DB 동기화
         function showSlide(slideNum) {
             if (slideNum < 1 || slideNum > totalSlides) return;
-            
+            showSlideLocal(slideNum);
+
+            // 강사 및 사용자가 넘긴 슬라이드를 실시간 DB에 동기화 전송
+            slideRef.set(slideNum);
+        }
+
+        // 실제 DOM에서 슬라이드 화면 전환
+        function showSlideLocal(slideNum) {
             const currentEl = document.querySelector(`.slide-content[data-slide="${currentSlide}"]`);
             const targetEl = document.querySelector(`.slide-content[data-slide="${slideNum}"]`);
 
@@ -849,8 +918,10 @@
         function generateQRCode() {
             const qrContainer = document.getElementById('qrcode');
             qrContainer.innerHTML = '';
+            // 접속자용 링크 (URL에서 ?role=host 제고된 일반 공유 주소)
+            const shareUrl = window.location.href.split('?')[0];
             new QRCode(qrContainer, {
-                text: window.location.href,
+                text: shareUrl,
                 width: 150,
                 height: 150
             });
@@ -861,17 +932,14 @@
             const nameInput = document.getElementById('attendeeName');
             const val = nameInput.value.trim();
             if (val) {
-                const list = document.getElementById('attendeeList');
-                const badge = document.createElement('span');
-                badge.className = 'px-2.5 py-1 bg-emerald-900/60 text-emerald-300 text-[11px] rounded-full border border-emerald-700';
-                badge.innerText = `${val} (접속됨)`;
-                list.appendChild(badge);
-
-                const countEl = document.getElementById('attendeeCount');
-                countEl.innerText = parseInt(countEl.innerText) + 1;
+                // 실시간 데이터베이스에 수강생 등록
+                attendeesRef.push({
+                    name: val,
+                    timestamp: Date.now()
+                });
 
                 nameInput.value = '';
-                alert(`${val}님 등록이 완료되었습니다. 함께 강의 화면이 공유됩니다.`);
+                alert(`${val}님 등록이 완료되었습니다. 강사님 화면과 실시간 공유됩니다.`);
             }
         }
 
