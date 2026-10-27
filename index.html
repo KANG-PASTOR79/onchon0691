@@ -3,701 +3,255 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>슬기로운 AI 목회 생활 - 강명호 목사 Presentation</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- QR Code Generator -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    
-    <!-- Firebase SDK (Realtime Database 지원) -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-
+    <title>신약 주석 및 회원 관리 시스템</title>
     <style>
-        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
-        * { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif; }
-        
-        .slide-aspect {
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f4f6f9;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        p.subtitle {
+            font-size: 0.95rem;
+            color: #666;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
             width: 100%;
-            max-width: 1280px;
-            aspect-ratio: 16 / 9;
+            max-width: 800px;
         }
 
-        .glow-cyan {
-            box-shadow: 0 0 25px rgba(6, 182, 212, 0.25);
+        .card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 28px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e9ecef;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
 
-        .slide-content {
-            transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
         }
 
-        .slide-hidden {
-            opacity: 0;
-            transform: scale(0.98);
-            pointer-events: none;
-            position: absolute;
-            inset: 0;
+        .card-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #edf2f7;
         }
 
-        .slide-active {
-            opacity: 1;
-            transform: scale(1);
+        .card-content {
+            font-size: 1rem;
+            line-height: 1.7;
+            color: #4a5568;
+            margin-bottom: 24px;
+        }
+
+        .card-content ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .card-content li {
             position: relative;
+            padding-left: 20px;
+            margin-bottom: 8px;
         }
 
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
+        .card-content li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #718096;
+            font-weight: bold;
         }
-        ::-webkit-scrollbar-track {
-            background: #0f172a;
+
+        .video-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: opacity 0.2s ease, background-color 0.2s ease;
         }
-        ::-webkit-scrollbar-thumb {
-            background: #334155;
-            border-radius: 3px;
+
+        .video-btn:hover {
+            opacity: 0.9;
+        }
+
+        /* 버튼 스타일 */
+        .btn-red {
+            background-color: #e53e3e;
+        }
+
+        .btn-blue {
+            background-color: #3182ce;
+        }
+
+        .btn-green {
+            background-color: #38a169;
+        }
+
+        /* 지도 영역 */
+        #map-container {
+            width: 100%;
+            height: 350px;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 10px;
+            border: 1px solid #e2e8f0;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        footer {
+            margin-top: 40px;
+            font-size: 0.85rem;
+            color: #a0aec0;
+            text-align: center;
         }
     </style>
+
+    <!-- Kakao Maps API (발급받으신 APP KEY를 넣으시면 지도 기능이 활성화됩니다) -->
+    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=YOUR_KAKAO_MAPS_APP_KEY"></script>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between overflow-x-hidden select-none">
+<body>
 
-    <!-- TOP HEADER / NAV BAR -->
-    <header class="bg-slate-900/80 backdrop-blur border-b border-slate-800 px-4 py-2.5 flex items-center justify-between z-30">
-        <div class="flex items-center space-x-3">
-            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center font-bold text-white shadow-md">
-                <i class="fa-solid me-0.5 fa-cross"></i>
-            </div>
-            <div>
-                <div class="flex items-center space-x-2">
-                    <h1 class="text-sm md:text-base font-bold text-white tracking-wide">슬기로운 AI 목회 생활</h1>
-                    <span id="syncBadge" class="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-emerald-950 text-emerald-400 border border-emerald-700 flex items-center gap-1">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> 실시간 라이브 연동 중
-                    </span>
-                </div>
-                <p class="text-xs text-slate-400 hidden sm:block">창원온천교회 강명호 목사 <span id="roleIndicator" class="text-cyan-400 font-bold ml-1"></span></p>
-            </div>
-        </div>
-
-        <!-- Center: Slide Progress Indicator -->
-        <div class="hidden md:flex items-center space-x-2 bg-slate-800/80 px-4 py-1.5 rounded-full border border-slate-700">
-            <span class="text-xs text-cyan-400 font-semibold" id="slideIndicator">Slide 1 / 15</span>
-            <div class="w-32 bg-slate-700 h-1.5 rounded-full overflow-hidden">
-                <div id="progressBar" class="bg-cyan-500 h-full w-[6.66%] transition-all duration-300"></div>
-            </div>
-        </div>
-
-        <!-- Right Tools -->
-        <div class="flex items-center space-x-2">
-            <button onclick="openRegistrationModal()" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition shadow">
-                <i class="fa-solid fa-qrcode"></i>
-                <span class="hidden sm:inline">QR 등록 / 동시공유</span>
-            </button>
-            <button onclick="toggleWorkshopMode()" class="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold transition shadow">
-                <i class="fa-solid fa-flask"></i>
-                <span class="hidden sm:inline">실습 도구함</span>
-            </button>
-            <button onclick="openTocModal()" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition" title="목차 보기">
-                <i class="fa-solid fa-list-ul"></i>
-            </button>
-        </div>
+    <header>
+        <h1>📖 신약 주석 & 강해 서비스</h1>
+        <p class="subtitle">말씀 주석 및 관련 강해 영상 모음</p>
     </header>
 
-    <!-- MAIN SLIDE DISPLAY AREA -->
-    <main class="flex-1 flex items-center justify-center p-2 sm:p-4 md:p-6 relative">
-        <div class="slide-aspect bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden relative flex flex-col justify-between glow-cyan">
-            
-            <!-- SLIDE CONTENTS -->
-            <div id="slideContainer" class="flex-1 relative overflow-y-auto p-6 md:p-10">
+    <div class="container">
 
-                <!-- SLIDE 1: COVER -->
-                <div class="slide-content slide-active h-full flex flex-col justify-between" data-slide="1">
-                    <div class="flex justify-between items-start">
-                        <span class="px-3 py-1 bg-cyan-950 text-cyan-400 border border-cyan-800 text-xs font-medium rounded-full">목회자 세미나 특강</span>
-                        <span class="text-slate-400 text-xs font-medium">Gemini Notebook Framework</span>
-                    </div>
-                    <div class="my-auto text-center space-y-6">
-                        <div class="inline-block p-4 rounded-2xl bg-gradient-to-tr from-cyan-500/10 to-blue-500/10 border border-cyan-500/30 mb-2">
-                            <i class="fa-solid fa-wand-magic-sparkles text-5xl text-cyan-400 animate-pulse"></i>
-                        </div>
-                        <h1 class="text-3xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-100 to-cyan-300 leading-tight">
-                            슬기로운 AI 목회 생활
-                        </h1>
-                        <p class="text-lg md:text-xl text-slate-300 max-w-2xl mx-auto font-light">
-                            생성형 AI를 활용한 실제 목회 현장 적용법 &amp; 2027 연간 목회계획 수립
-                        </p>
-                    </div>
-                    <div class="flex justify-between items-end border-t border-slate-800/80 pt-4 text-xs text-slate-400">
-                        <div>
-                            <p class="font-semibold text-slate-300">창원온천교회 강명호 목사</p>
-                            <p class="text-slate-500">목회 정보화 &amp; AI 프롬프트 전문 강사</p>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-cyan-400 font-mono">ONE VOICE 창원</p>
-                            <p class="text-slate-500">2026 AI 목회 교육 센터</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- SLIDE 2: PASTORAL BURDEN -->
-                <div class="slide-content slide-hidden h-full flex flex-col justify-between" data-slide="2">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-xl md:text-2xl font-bold text-white flex items-center">
-                            <i class="fa-solid fa-scale-unbalanced-flip text-cyan-400 me-3"></i>현실의 목회적 고민과 시간 부족
-                        </h2>
-                        <span class="text-xs text-cyan-400 font-mono">01. BACKGROUND</span>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-auto">
-                        <div class="bg-slate-800/60 p-6 rounded-xl border border-slate-700/60 space-y-4">
-                            <div class="flex items-center space-x-3 text-rose-400 font-bold text-lg">
-                                <i class="fa-solid fa-weight-hanging"></i>
-                                <h3>끝없는 사역의 무게</h3>
-                            </div>
-                            <ul class="space-y-3 text-sm text-slate-300">
-                                <li class="flex items-center space-x-2"><i class="fa-solid fa-angle-right text-rose-400"></i><span>매주 다가오는 주간 설교 및 말씀 준비</span></li>
-                                <li class="flex items-center space-x-2"><i class="fa-solid fa-angle-right text-rose-400"></i><span>각종 목회 행정 문서 및 절기 행사 기획</span></li>
-                                <li class="flex items-center space-x-2"><i class="fa-solid fa-angle-right text-rose-400"></i><span>주보, 카드뉴스, 홍보 영상 제작 등 멀티 업무</span></li>
-                            </ul>
-                        </div>
-                        <div class="bg-slate-800/60 p-6 rounded-xl border border-slate-700/60 space-y-4">
-                            <div class="flex items-center space-x-3 text-cyan-400 font-bold text-lg">
-                                <i class="fa-solid fa-clock-rotate-left"></i>
-                                <h3>본질에 집중할 시간의 부재</h3>
-                            </div>
-                            <ul class="space-y-3 text-sm text-slate-300">
-                                <li class="flex items-center space-x-2"><i class="fa-solid fa-angle-right text-cyan-400"></i><span>성도 심방 및 깊이 있는 1:1 영적 상담</span></li>
-                                <li class="flex items-center space-x-2"><i class="fa-solid fa-angle-right text-cyan-400"></i><span>간절한 기도와 성령의 감동을 구하는 묵상 시간</span></li>
-                                <li class="flex items-center space-x-2"><i class="fa-solid fa-angle-right text-cyan-400"></i><span>영적 에너지 충전 및 목회적 재충전</span></li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="bg-cyan-950/60 border border-cyan-700/50 p-4 rounded-xl text-center text-sm md:text-base text-cyan-200">
-                        <i class="fa-solid fa-quote-left text-cyan-400 me-2"></i>
-                        AI는 성령의 자리를 대체하는 것이 아니라, 목회자가 <strong>'본질(영혼 구원과 기도)'</strong>에 집중할 시간을 벌어주는 <strong>'똑똑한 디지털 비서'</strong>입니다.
-                    </div>
-                </div>
-
-                <!-- SLIDE 3 ~ 9 (기존 동일 생략 영역) -->
-                <div class="slide-content slide-hidden h-full flex flex-col justify-between" data-slide="3">
-                    <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-xl md:text-2xl font-bold text-white flex items-center"><i class="fa-solid fa-brain text-yellow-400 me-3"></i>검색엔진 vs 생성형 AI</h2>
-                        <span class="text-xs text-yellow-400 font-mono">02. CONCEPT</span>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 my-auto">
-                        <div class="bg-slate-800/80 p-6 rounded-2xl border border-slate-700">
-                            <h3 class="text-xl font-bold text-white mb-2"><i class="fa-solid fa-magnifying-glass text-blue-400 me-2"></i>검색 엔진 (자료실 사서)</h3>
-                            <p class="text-sm text-slate-300">이미 웹상에 존재하는 자료를 찾아 보여줌</p>
-                        </div>
-                        <div class="bg-gradient-to-br from-slate-800 to-cyan-950/70 p-6 rounded-2xl border border-cyan-500/40">
-                            <h3 class="text-xl font-bold text-white mb-2"><i class="fa-solid fa-hat-wizard text-cyan-400 me-2"></i>생성형 AI (똑똑한 비서)</h3>
-                            <p class="text-sm text-slate-200">방대한 데이터를 학습해 상황에 맞는 새로운 답을 생성해냄</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="slide-content slide-hidden h-full flex flex-col justify-between" data-slide="4">
-                    <h2 class="text-xl font-bold text-white"><i class="fa-solid fa-users-gear text-cyan-400 me-3"></i>3인 3색 디지털 부교역자 프로필</h2>
-                    <p class="text-slate-300 text-sm my-auto">ChatGPT (다재다능 부목사) / Gemini (검색 요약 전도사) / Claude (섬세한 신학자)</p>
-                </div>
-
-                <div class="slide-content slide-hidden h-full flex flex-col justify-between" data-slide="5">
-                    <h2 class="text-xl font-bold text-white"><i class="fa-solid fa-key text-cyan-400 me-3"></i>마법의 프롬프트 5요소 조립 공식</h2>
-                    <p class="text-slate-300 text-sm my-auto">1.역할 2.작업 3.배경 4.형식 5.톤/어조</p>
-                </div>
-
-                <div class="slide-content slide-hidden h-full flex flex-col justify-between" data-slide="6">
-                    <h2 class="text-xl font-bold text-white"><i class="fa-solid fa-shield-halved text-rose-400 me-3"></i>목회 윤리 안전바 3가지</h2>
-                    <p class="text-slate-300 text-sm my-auto">1.환각 주의 2.개인정보 절대 보호 3.저작권과 영적 주체성</p>
-                </div>
-
-                <div class="slide-content slide-hidden h-full flex flex-col justify-between" data-slide="7">
-                    <h2 class="text-xl font-bold text-white"><i class="fa-solid fa-clock text-cyan-400 me-3"></i>목회 행정 &amp; 설교 준비 타임라인</h2>
-                    <p class="text-slate-300 text-sm my-auto">STEP 1: 본문 주해 보조 → STEP 2: 예화 브레인스토밍 → STEP 3: 제목 &amp; 요약 도출</p>
-                </div>
-
-                <div class="slide-content slide-hidden h-full flex flex-col justify-between" data-slide="8">
-                    <h2 class="text-xl font-bold text-white"><i class="fa-solid fa-user-shield text-rose-400 me-3"></i>딥페이크와 AI 사기 지혜로운 대처법</h2>
-                    <p class="text-slate-300 text-sm my-auto">의심해야 할 신호 확인 및 직통 전화 재확인 매뉴얼 구축</p>
-                </div>
-
-                <div class="slide-content slide-hidden h-full flex flex-col justify-between" data-slide="9">
-                    <h2 class="text-xl font-bold text-white"><i class="fa-solid fa-anchor text-amber-400 me-3"></i>도구는 진화하지만 목양의 본질은 영원합니다</h2>
-                    <p class="text-slate-300 text-sm my-auto">따뜻한 터치, 눈물의 기도, 성령의 임재는 결코 AI가 대신할 수 없습니다.</p>
-                </div>
-
-                <!-- SLIDE 10: PRACTICE 1 - LOCAL MEDIA LINK EXAMPLE -->
-                <div class="slide-content slide-hidden h-full flex flex-col justify-between" data-slide="10">
-                    <div class="flex justify-between items-center mb-3">
-                        <h2 class="text-xl md:text-2xl font-bold text-white flex items-center">
-                            <i class="fa-solid fa-film text-purple-400 me-3"></i>실습 1: 홍보물 이미지 및 설교 쇼츠 동영상 (로컬 연동)
-                        </h2>
-                        <span class="text-xs text-purple-400 font-mono">09. PRACTICE 1</span>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-auto text-xs">
-                        
-                        <!-- 로컬 이미지 연결 예시 -->
-                        <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-3">
-                            <h4 class="font-bold text-purple-300 text-sm flex items-center justify-between">
-                                <span><i class="fa-solid fa-image me-2"></i>AI 제작 홍보 포스터 (내 컴퓨터 사진)</span>
-                            </h4>
-                            <div class="relative group cursor-pointer overflow-hidden rounded-lg border border-slate-600" onclick="openMediaViewer('media/poster_sample.jpg', 'image')">
-                                <img src="media/poster_sample.jpg" onerror="this.src='https://via.placeholder.com/600x400/1e293b/06b6d4?text=media/poster_sample.jpg+사진을+넣어주세요'" class="w-full h-36 object-cover group-hover:scale-105 transition duration-300">
-                                <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white font-bold text-xs">
-                                    <i class="fa-solid fa-expand me-1.5"></i> 원본 이미지 팝업 열기
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 로컬 동영상 연결 예시 -->
-                        <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-3">
-                            <h4 class="font-bold text-purple-300 text-sm flex items-center justify-between">
-                                <span><i class="fa-solid fa-video me-2"></i>설교 쇼츠 영상 (내 컴퓨터 동영상)</span>
-                            </h4>
-                            <button onclick="openMediaViewer('media/sermon_shorts.mp4', 'video')" class="w-full h-36 bg-slate-900 hover:bg-slate-950 border border-purple-500/40 rounded-lg text-purple-300 font-semibold flex flex-col items-center justify-center space-y-2 transition shadow">
-                                <div class="w-12 h-12 rounded-full bg-purple-600/30 flex items-center justify-center text-purple-400 text-xl">
-                                    <i class="fa-solid fa-play"></i>
-                                </div>
-                                <span>click해서 내 PC 동영상 재생하기</span>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="bg-slate-900 p-3 rounded-xl border border-slate-800 text-xs text-slate-400 text-center">
-                        클릭 시 강사님 화면과 수강생 화면에서 동영상 및 이미지가 실시간으로 동시에 팝업됩니다.
-                    </div>
-                </div>
-
-                <!-- SLIDE 11: PRACTICE 2 - NOTEBOOK LM & LOCAL DOCS -->
-                <div class="slide-content slide-hidden h-full flex flex-col justify-between" data-slide="11">
-                    <div class="flex justify-between items-center mb-3">
-                        <h2 class="text-xl md:text-2xl font-bold text-white flex items-center">
-                            <i class="fa-solid fa-book-bookmark text-cyan-400 me-3"></i>실습 2: NotebookLM 주석 및 문서 열람 (로컬 파일)
-                        </h2>
-                        <span class="text-xs text-cyan-400 font-mono">10. PRACTICE 2</span>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-auto text-xs">
-                        <!-- 로컬 TXT / PDF 문서 연동 -->
-                        <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-3">
-                            <h4 class="font-bold text-cyan-300 text-sm"><i class="fa-solid fa-file-lines me-2"></i>신학 주석 요약 문서 (내 PC 텍스트 파일)</h4>
-                            <button onclick="openMediaViewer('media/pastoral_plan.txt', 'document')" class="w-full py-4 bg-cyan-950/60 border border-cyan-700 hover:bg-cyan-900/60 rounded-xl text-cyan-300 font-semibold flex items-center justify-center space-x-2 transition">
-                                <i class="fa-solid fa-folder-open text-base"></i>
-                                <span>'media/pastoral_plan.txt' 파일 팝업 열기</span>
-                            </button>
-                        </div>
-
-                        <!-- 렌더링 설명 -->
-                        <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-2">
-                            <h4 class="font-bold text-cyan-300 text-sm">💡 내 컴퓨터 파일 연결 가이드</h4>
-                            <p class="text-slate-300 leading-relaxed">
-                                `index.html`이 있는 위치에 `media` 폴더를 만드시고,<br>
-                                영상(`sermon_shorts.mp4`), 이미지(`poster_sample.jpg`), 파일(`pastoral_plan.txt`)을 저장해두시면 클릭 시 바로 실행됩니다.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- SLIDE 12 ~ 15 (동일 생략 영역) -->
-                <div class="slide-content slide-hidden h-full flex flex-col justify-between" data-slide="12">
-                    <h2 class="text-xl font-bold text-white"><i class="fa-solid fa-calendar-check text-yellow-400 me-3"></i>실습 3: 2027 목회계획 마스터 프롬프트</h2>
-                    <p class="text-slate-300 text-sm my-auto">역할, 상황, 과업, 조건, 출력 6요소를 갖춘 프롬프트 작성 실습</p>
-                </div>
-
-                <div class="slide-content slide-hidden h-full flex flex-col justify-between" data-slide="13">
-                    <h2 class="text-xl font-bold text-white"><i class="fa-solid fa-diagram-project text-cyan-400 me-3"></i>실습 4: 목회계획 6단계 &amp; SWOT 분석</h2>
-                    <p class="text-slate-300 text-sm my-auto">강점(S), 약점(W), 기회(O), 위협(T) 분석 및 단계별 질문 프로세스</p>
-                </div>
-
-                <div class="slide-content slide-hidden h-full flex flex-col justify-between" data-slide="14">
-                    <h2 class="text-xl font-bold text-white"><i class="fa-solid fa-list-check text-emerald-400 me-3"></i>실습 5: AI 목회 결과물 검증 체크리스트</h2>
-                    <p class="text-slate-300 text-sm my-auto">신학 타당성, 현실성, 부담 유무, 보안성 4대 요소 최종 검증</p>
-                </div>
-
-                <div class="slide-content slide-hidden h-full flex flex-col justify-between" data-slide="15">
-                    <h2 class="text-xl font-bold text-white"><i class="fa-solid fa-heart-circle-check text-cyan-400 me-3"></i>마무리: 디지털 동역자 QR 안내</h2>
-                    <p class="text-slate-300 text-sm my-auto">ChatGPT, Gemini, Claude 링크 안내 및 감사 인사</p>
-                </div>
-
+        <!-- 카드 1: 마태복음 1장 -->
+        <div class="card">
+            <h2 class="card-title">마태복음 1장: 메시아의 탄생과 족보</h2>
+            <div class="card-content">
+                <strong>1. 예수님의 족보와 구속사적 의미</strong>
+                <ul>
+                    <li>아브라함과 다윗의 자손 예수 그리스도의 세계 (1:1)</li>
+                    <li>창조, 타락, 구속의 구속사적 전진 묘사 (14대씩 3배열)</li>
+                </ul>
+                <br>
+                <strong>2. 성령으로 잉태되신 예수 그리스도 (1:18-25)</strong>
+                <ul>
+                    <li>죄에서 구원할 자 '예수'와 임마누엘 예언의 성취</li>
+                </ul>
             </div>
+            <a href="https://www.youtube.com/watch?v=kYJ5k8Z_K88" target="_blank" rel="noopener noreferrer" class="video-btn btn-red">
+                ▶ [영상] 말씀으로 채워지는 역사
+            </a>
+        </div>
 
-            <!-- CONTROLLER BAR -->
-            <div class="bg-slate-950/90 border-t border-slate-800 px-4 py-3 flex items-center justify-between z-20">
-                <div class="flex items-center space-x-2">
-                    <button onclick="prevSlide()" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 transition text-sm">
-                        <i class="fa-solid fa-chevron-left me-1"></i> 이전
-                    </button>
-                    <button onclick="nextSlide()" class="p-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-semibold transition text-sm px-4">
-                        다음 <i class="fa-solid fa-chevron-right ms-1"></i>
-                    </button>
-                </div>
+        <!-- 카드 2: 영적 성장 -->
+        <div class="card">
+            <h2 class="card-title">영적 성장의 시각: 퍼즐 조각과 신뢰</h2>
+            <div class="card-content">
+                <strong>1. 낙심 대신 영적 성장으로 나아가는 길</strong>
+                <ul>
+                    <li>이해할 수 없는 퍼즐 조각도 하나님의 전체 계획 속에 존재</li>
+                </ul>
+                <br>
+                <strong>2. 시각이 바뀌면 태도가 달라진다</strong>
+                <ul>
+                    <li>고단한 일상이 아닌, 하나님의 거룩한 집을 세워가는 과정</li>
+                    <li>눈물조차 합력하여 선을 이루시는 하나님 신뢰</li>
+                </ul>
+            </div>
+            <a href="https://www.youtube.com/watch?v=0Z4X90P5e4Y" target="_blank" rel="noopener noreferrer" class="video-btn btn-blue">
+                ▶ [영상] 영적 성장과 시각 변화
+            </a>
+        </div>
 
-                <div class="flex items-center space-x-3 text-xs text-slate-400">
-                    <button onclick="toggleAutoPlay()" id="autoPlayBtn" class="hover:text-cyan-400 transition flex items-center">
-                        <i class="fa-solid fa-play me-1"></i> <span id="autoPlayText">자동 재생</span>
-                    </button>
-                    <button onclick="toggleFullScreen()" class="hover:text-cyan-400 transition">
-                        <i class="fa-solid fa-expand me-1"></i> 전체화면
-                    </button>
+        <!-- 카드 3: 삼손 중창단 -->
+        <div class="card">
+            <h2 class="card-title">창원 온천교회 삼손 중창단 초대</h2>
+            <div class="card-content">
+                <ul>
+                    <li>노래와 춤, 찬양이 어우러진 특별한 시간</li>
+                    <li>성악 전공자들로 구성된 삼손 중창단과의 만남</li>
+                    <li>웃음과 감동, 찬양이 가득한 기쁨의 자리에 초청합니다.</li>
+                </ul>
+            </div>
+            <a href="https://www.youtube.com/watch?v=R_QpX79gW0U" target="_blank" rel="noopener noreferrer" class="video-btn btn-green">
+                ▶ [영상] 삼손 중창단 초청 안내
+            </a>
+        </div>
+
+        <!-- 카드 4: 카카오 맵 약도 영역 -->
+        <div class="card">
+            <h2 class="card-title">📍 모임 및 예배 장소 안내</h2>
+            <div class="card-content">
+                <p style="margin-bottom: 10px;">아래 지도를 통해 오시는 길을 확인하실 수 있습니다.</p>
+                <div id="map-container">
+                    <div id="map"></div>
                 </div>
             </div>
         </div>
-    </main>
 
-    <!-- UNIVERSAL MEDIA & FILE VIEWER MODAL -->
-    <div id="mediaViewerModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-4xl w-full p-5 space-y-4 shadow-2xl relative">
-            <button onclick="closeMediaViewer()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-            <h3 class="text-base font-bold text-cyan-400 flex items-center" id="mediaViewerTitle">
-                <i class="fa-solid fa-folder-open me-2"></i>미디어 / 파일 뷰어
-            </h3>
-            
-            <div id="mediaViewerContent" class="w-full max-h-[70vh] aspect-video bg-black rounded-xl overflow-hidden flex items-center justify-center relative">
-                <!-- Javascript Dynamic Loading -->
-            </div>
-            
-            <div class="flex justify-between items-center text-xs text-slate-400 border-t border-slate-800 pt-3">
-                <span id="mediaPathText">파일 경로: media/...</span>
-                <a id="downloadBtn" href="#" download class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg flex items-center space-x-1.5 transition">
-                    <i class="fa-solid fa-download"></i>
-                    <span>원본 다운로드</span>
-                </a>
-            </div>
-        </div>
     </div>
 
-    <!-- ATTENDEE REGISTRATION & QR MODAL -->
-    <div id="registrationModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 space-y-5 shadow-2xl relative">
-            <button onclick="closeRegistrationModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
-                <i class="fa-solid fa-xmark text-lg"></i>
-            </button>
-            <div class="text-center space-y-1">
-                <h3 class="text-xl font-bold text-white flex items-center justify-center">
-                    <i class="fa-solid fa-qrcode text-emerald-400 me-2"></i>수강생 등록 &amp; 강의 공유
-                </h3>
-                <p class="text-xs text-slate-400">QR 코드를 스캔하거나 등록 후 노트북/탭으로 함께 보세요</p>
-            </div>
-            <div class="bg-white p-4 rounded-xl w-44 h-44 mx-auto flex items-center justify-center shadow-inner" id="qrcode"></div>
-            <form id="regForm" onsubmit="handleRegistration(event)" class="space-y-3">
-                <div>
-                    <label class="block text-xs text-slate-300 mb-1 font-medium">참석자 이름 / 교회명</label>
-                    <input type="text" id="attendeeName" required placeholder="예: 홍길동 목사 (창원교회)" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-cyan-500">
-                </div>
-                <button type="submit" class="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-xs transition shadow">
-                    등록하고 공유 접속하기
-                </button>
-            </form>
-            <div class="border-t border-slate-800 pt-3">
-                <div class="flex justify-between items-center mb-2">
-                    <span class="text-xs text-slate-400 font-semibold">현재 접속 수강생 목록 (<span id="attendeeCount">0</span>명)</span>
-                </div>
-                <div id="attendeeList" class="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
-                    <span class="px-2.5 py-1 bg-slate-800 text-cyan-300 text-[11px] rounded-full border border-slate-700">강명호 목사 (호스트)</span>
-                </div>
-            </div>
-        </div>
-    </div>
+    <footer>
+        &copy; 2026 Interactive Scripture Study & Member Directory. All rights reserved.
+    </footer>
 
-    <!-- TABLE OF CONTENTS MODAL -->
-    <div id="tocModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-2xl relative">
-            <button onclick="closeTocModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
-                <i class="fa-solid fa-xmark text-lg"></i>
-            </button>
-            <h3 class="text-lg font-bold text-white flex items-center">
-                <i class="fa-solid fa-list-ul text-cyan-400 me-2"></i>슬라이드 목차 (전체 15장)
-            </h3>
-            <div class="grid grid-cols-1 gap-1.5 max-h-96 overflow-y-auto text-xs" id="tocList"></div>
-        </div>
-    </div>
-
-    <!-- WORKSHOP & PROMPT DRAWER -->
-    <div id="workshopDrawer" class="fixed right-0 top-0 bottom-0 w-full sm:w-96 bg-slate-900 border-l border-slate-800 z-40 transform translate-x-full transition-transform duration-300 p-5 flex flex-col justify-between shadow-2xl">
-        <div class="space-y-4 overflow-y-auto pr-1">
-            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
-                <h3 class="font-bold text-white text-sm flex items-center"><i class="fa-solid fa-flask text-blue-400 me-2"></i>목회 AI 실습 도구함</h3>
-                <button onclick="toggleWorkshopMode()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-            <div class="space-y-2">
-                <label class="block text-xs font-semibold text-cyan-400">1. 성도 심방 위로 메시지 프롬프트 생성기</label>
-                <input type="text" id="wsTarget" placeholder="대상 (예: 50대 여성 성도 수술 회복 중)" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-xs text-white">
-                <input type="text" id="wsBible" placeholder="포함 성구 (예: 이사야 41:10)" class="w-full bg-slate-800 border border-slate-700 rounded p-2 text-xs text-white">
-                <button onclick="generatePrompt1()" class="w-full bg-blue-600 hover:bg-blue-500 py-1.5 rounded text-xs text-white font-bold">프롬프트 복사하기</button>
-            </div>
-            <div class="space-y-2 border-t border-slate-800 pt-3">
-                <label class="block text-xs font-semibold text-yellow-400">2. 2027 목회계획 마스터 프롬프트</label>
-                <textarea id="masterPromptText" class="w-full h-32 bg-slate-800 border border-slate-700 rounded p-2 text-[11px] text-slate-300 font-mono">너는 개혁주의 신학을 이해하는 중소형 교회 목회 컨설턴트야. 창원온천교회(출석 80명, 고령 성도 중심, 다음세대 부재)의 2027년 목회 표어 추천, 5대 목표 및 12개월 실행 계획서를 현실적으로 작성해줘.</textarea>
-                <button onclick="copyMasterPrompt()" class="w-full bg-yellow-600 hover:bg-yellow-500 py-1.5 rounded text-xs text-white font-bold">마스터 프롬프트 복사</button>
-            </div>
-        </div>
-        <div class="text-[11px] text-slate-500 border-t border-slate-800 pt-3 text-center">복사된 프롬프트를 AI 도구에 붙여넣어 실행해보세요.</div>
-    </div>
-
-    <!-- JAVASCRIPT ENGINE -->
+    <!-- Kakao Map 스크립트 실행 -->
     <script>
-        let currentSlide = 1;
-        const totalSlides = 15;
-        let autoPlayInterval = null;
-
-        // Firebase 설정 (내장 실시간 동기화 데이터베이스)
-        const firebaseConfig = {
-            databaseURL: "https://ai-pastoral-presentation-default-rtdb.firebaseio.com"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
-        const slideRef = database.ref('lecture/currentSlide');
-        const mediaRef = database.ref('lecture/currentMedia');
-        const attendeesRef = database.ref('lecture/attendees');
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const isHost = urlParams.get('role') === 'host';
-
-        const slideTitles = [
-            "표지: 슬기로운 AI 목회 생활",
-            "현실의 목회적 고민과 시간 부족",
-            "검색엔진 vs 생성형 AI 차이점",
-            "3인 3색 디지털 부교역자 프로필",
-            "마법의 프롬프트 5요소 조립 공식",
-            "목회 윤리 안전바 3가지",
-            "목회 행정 & 설교 준비 타임라인",
-            "딥페이크 및 AI 사기 지혜로운 대처법",
-            "목양의 본질은 영원합니다",
-            "실습 1: 홍보물 이미지 및 설교 쇼츠 동영상 (로컬 연동)",
-            "실습 2: NotebookLM 주석 및 문서 열람 (로컬 파일)",
-            "실습 3: 2027 목회계획 프롬프트 6요소",
-            "실습 4: 목회계획 6단계 & SWOT 분석",
-            "실습 5: AI 목회 결과물 검증 체크리스트",
-            "마무리: 디지털 동역자 QR 안내"
-        ];
-
-        window.onload = function() {
-            updateSlideUI();
-            generateQRCode();
-            buildToc();
-
-            const roleIndicator = document.getElementById('roleIndicator');
-            if (isHost) {
-                roleIndicator.innerText = "(강사 컨트롤러 모드)";
-                roleIndicator.classList.add("text-amber-400");
-            } else {
-                roleIndicator.innerText = "(수강생 라이브 동기화 모드)";
-            }
-
-            // Realtime Slide Listener
-            slideRef.on('value', (snapshot) => {
-                const remoteSlide = snapshot.val();
-                if (remoteSlide && remoteSlide !== currentSlide) {
-                    showSlideLocal(remoteSlide);
-                }
-            });
-
-            // Realtime Media Viewer Listener (미디어 팝업 실시간 동기화)
-            mediaRef.on('value', (snapshot) => {
-                const data = snapshot.val();
-                if (data && data.open) {
-                    openMediaViewerLocal(data.filePath, data.type);
-                } else {
-                    closeMediaViewerLocal();
-                }
-            });
-
-            // Realtime Attendees Listener
-            attendeesRef.on('value', (snapshot) => {
-                const data = snapshot.val();
-                const listContainer = document.getElementById('attendeeList');
-                const countContainer = document.getElementById('attendeeCount');
-                listContainer.innerHTML = `<span class="px-2.5 py-1 bg-slate-800 text-cyan-300 text-[11px] rounded-full border border-slate-700">강명호 목사 (호스트)</span>`;
-                let count = 1;
-                if (data) {
-                    Object.values(data).forEach(att => {
-                        const badge = document.createElement('span');
-                        badge.className = 'px-2.5 py-1 bg-emerald-900/60 text-emerald-300 text-[11px] rounded-full border border-emerald-700';
-                        badge.innerText = `${att.name} (접속됨)`;
-                        listContainer.appendChild(badge);
-                        count++;
-                    });
-                }
-                countContainer.innerText = count;
-            });
-
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
-                else if (e.key === 'ArrowLeft') prevSlide();
-            });
-        };
-
-        /* LOCAL FILE & MEDIA VIEWER LOGIC */
-        function openMediaViewer(filePath, type) {
-            openMediaViewerLocal(filePath, type);
-            if (isHost) {
-                mediaRef.set({ filePath: filePath, type: type, open: true });
-            }
-        }
-
-        function closeMediaViewer() {
-            closeMediaViewerLocal();
-            if (isHost) {
-                mediaRef.set({ open: false });
-            }
-        }
-
-        function openMediaViewerLocal(filePath, type) {
-            const modal = document.getElementById('mediaViewerModal');
-            const container = document.getElementById('mediaViewerContent');
-            const pathText = document.getElementById('mediaPathText');
-            const downloadBtn = document.getElementById('downloadBtn');
-            const titleText = document.getElementById('mediaViewerTitle');
-
-            pathText.innerText = `파일 경로: ${filePath}`;
-            downloadBtn.href = filePath;
-
-            if (type === 'video') {
-                titleText.innerHTML = `<i class="fa-solid fa-circle-play me-2"></i>동영상 플레이어 (${filePath})`;
-                container.innerHTML = `
-                    <video controls autoplay class="w-full h-full object-contain">
-                        <source src="${filePath}" type="video/mp4">
-                        브라우저가 동영상 재생을 지원하지 않습니다.
-                    </video>`;
-            } else if (type === 'image') {
-                titleText.innerHTML = `<i class="fa-solid fa-image me-2"></i>이미지 뷰어 (${filePath})`;
-                container.innerHTML = `<img src="${filePath}" class="max-w-full max-h-full object-contain mx-auto">`;
-            } else if (type === 'document') {
-                titleText.innerHTML = `<i class="fa-solid fa-file-lines me-2"></i>문서 뷰어 (${filePath})`;
-                // 텍스트 파일인 경우 직접 읽어와 화면에 표시
-                fetch(filePath)
-                    .then(response => response.text())
-                    .then(text => {
-                        container.innerHTML = `<div class="p-6 text-left text-xs font-mono text-slate-200 bg-slate-950 w-full h-full overflow-y-auto whitespace-pre-wrap">${text}</div>`;
-                    })
-                    .catch(() => {
-                        container.innerHTML = `<iframe src="${filePath}" class="w-full h-full border-0"></iframe>`;
-                    });
-            }
-
-            modal.classList.remove('hidden');
-        }
-
-        function closeMediaViewerLocal() {
-            document.getElementById('mediaViewerContent').innerHTML = '';
-            document.getElementById('mediaViewerModal').classList.add('hidden');
-        }
-
-        /* SLIDE CONTROLS */
-        function showSlide(slideNum) {
-            if (slideNum < 1 || slideNum > totalSlides) return;
-            showSlideLocal(slideNum);
-            slideRef.set(slideNum);
-        }
-
-        function showSlideLocal(slideNum) {
-            const currentEl = document.querySelector(`.slide-content[data-slide="${currentSlide}"]`);
-            const targetEl = document.querySelector(`.slide-content[data-slide="${slideNum}"]`);
-            if (currentEl) {
-                currentEl.classList.remove('slide-active');
-                currentEl.classList.add('slide-hidden');
-            }
-            if (targetEl) {
-                targetEl.classList.remove('slide-hidden');
-                targetEl.classList.add('slide-active');
-            }
-            currentSlide = slideNum;
-            updateSlideUI();
-        }
-
-        function nextSlide() {
-            showSlide(currentSlide < totalSlides ? currentSlide + 1 : 1);
-        }
-
-        function prevSlide() {
-            if (currentSlide > 1) showSlide(currentSlide - 1);
-        }
-
-        function updateSlideUI() {
-            document.getElementById('slideIndicator').innerText = `Slide ${currentSlide} / ${totalSlides}`;
-            document.getElementById('progressBar').style.width = `${(currentSlide / totalSlides) * 100}%`;
-        }
-
-        function toggleAutoPlay() {
-            const btnText = document.getElementById('autoPlayText');
-            if (autoPlayInterval) {
-                clearInterval(autoPlayInterval);
-                autoPlayInterval = null;
-                btnText.innerText = "자동 재생";
-            } else {
-                autoPlayInterval = setInterval(nextSlide, 5000);
-                btnText.innerText = "일시 정지";
-            }
-        }
-
-        function toggleFullScreen() {
-            if (!document.fullscreenElement) document.documentElement.requestFullscreen();
-            else if (document.exitFullscreen) document.exitFullscreen();
-        }
-
-        /* MODALS */
-        function openRegistrationModal() { document.getElementById('registrationModal').classList.remove('hidden'); }
-        function closeRegistrationModal() { document.getElementById('registrationModal').classList.add('hidden'); }
-
-        function generateQRCode() {
-            const qrContainer = document.getElementById('qrcode');
-            qrContainer.innerHTML = '';
-            const shareUrl = window.location.href.split('?')[0];
-            new QRCode(qrContainer, { text: shareUrl, width: 150, height: 150 });
-        }
-
-        function handleRegistration(e) {
-            e.preventDefault();
-            const nameInput = document.getElementById('attendeeName');
-            const val = nameInput.value.trim();
-            if (val) {
-                attendeesRef.push({ name: val, timestamp: Date.now() });
-                nameInput.value = '';
-                alert(`${val}님 등록이 완료되었습니다.`);
-            }
-        }
-
-        function openTocModal() { document.getElementById('tocModal').classList.remove('hidden'); }
-        function closeTocModal() { document.getElementById('tocModal').classList.add('hidden'); }
-
-        function buildToc() {
-            const list = document.getElementById('tocList');
-            list.innerHTML = '';
-            slideTitles.forEach((title, index) => {
-                const item = document.createElement('button');
-                item.className = 'w-full text-left p-2 rounded hover:bg-slate-800 text-slate-300 hover:text-cyan-400 transition flex justify-between items-center';
-                item.innerHTML = `<span>${index + 1}. ${title}</span> <i class="fa-solid fa-angle-right text-xs"></i>`;
-                item.onclick = function() {
-                    showSlide(index + 1);
-                    closeTocModal();
+        document.addEventListener("DOMContentLoaded", function () {
+            var container = document.getElementById('map');
+            if (container && typeof kakao !== 'undefined' && kakao.maps) {
+                var options = {
+                    center: new kakao.maps.LatLng(35.2285, 128.6811), // 위치 기본값 (창원 지역)
+                    level: 3
                 };
-                list.appendChild(item);
-            });
-        }
+                var map = new kakao.maps.Map(container, options);
 
-        function toggleWorkshopMode() {
-            document.getElementById('workshopDrawer').classList.toggle('translate-x-full');
-        }
-
-        function generatePrompt1() {
-            const target = document.getElementById('wsTarget').value || '50대 여성 성도 수술 회복 중';
-            const bible = document.getElementById('wsBible').value || '이사야 41:10';
-            copyToClipboard(`너는 영혼을 돌보는 목회자야. ${target} 상황 성도에게 보낼 카톡 메시지를 작성해줘. ${bible} 성구 포함 3문장 이내.`);
-            alert('심방 프롬프트 복사 완료!');
-        }
-
-        function copyMasterPrompt() {
-            copyToClipboard(document.getElementById('masterPromptText').value);
-            alert('목회계획 마스터 프롬프트 복사 완료!');
-        }
-
-        function copyToClipboard(text) {
-            const temp = document.createElement('textarea');
-            temp.value = text;
-            document.body.appendChild(temp);
-            temp.select();
-            document.execCommand('copy');
-            document.body.removeChild(temp);
-        }
+                // 마커 표시
+                var markerPosition = new kakao.maps.LatLng(35.2285, 128.6811);
+                var marker = new kakao.maps.Marker({
+                    position: markerPosition
+                });
+                marker.setMap(map);
+            }
+        });
     </script>
 </body>
 </html>
